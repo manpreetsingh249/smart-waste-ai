@@ -1,8 +1,8 @@
 """
-AI Smart Waste Management System - Main Execution Entry Point.
+AI Smart Waste Management System entry point.
 
-Starts the FastAPI server with Uvicorn, displays terminal status banner,
-and provides direct browser links.
+Exports the FastAPI application as ``app`` for Vercel and keeps the
+Uvicorn launcher for local development.
 """
 
 import sys
@@ -13,11 +13,13 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-import uvicorn
+from app.main import app
 from app.config import HOST, PORT, DEBUG, APP_TITLE, APP_SUBTITLE, APP_VERSION
 
 
 def main():
+    import uvicorn
+
     print("=" * 70)
     print(f"  {APP_TITLE} (v{APP_VERSION})")
     print(f"  {APP_SUBTITLE}")
