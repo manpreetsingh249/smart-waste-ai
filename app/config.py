@@ -29,7 +29,7 @@ APP_VERSION = "1.0.0"
 
 # Server Settings
 HOST = os.getenv("HOST", "127.0.0.1")
-PORT = int(os.getenv("PORT", "8000"))
+PORT = int(os.getenv("PORT") or "8000")
 DEBUG = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
 
 # Directory Paths
