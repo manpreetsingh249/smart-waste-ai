@@ -1,13 +1,18 @@
 """
 Configuration settings for the AI Smart Waste Management System.
 Centralizes paths, model thresholds, camera intervals, and server parameters.
+Optimized for both local development and Vercel serverless deployment.
 """
 
 import os
+import tempfile
 from pathlib import Path
 
-# Base project root directory (d:\ml)
+# Base project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Detect if running on Vercel serverless environment
+IS_VERCEL = os.getenv("VERCEL") == "1"
 
 # Optional simple .env file loader (no external dependency required)
 ENV_FILE = BASE_DIR / ".env"
@@ -28,14 +33,21 @@ APP_SUBTITLE = "Real-Time Waste Classification Using Deep Learning"
 APP_VERSION = "1.0.0"
 
 # Server Settings
-HOST = os.getenv("HOST", "127.0.0.1")
+HOST = os.getenv("HOST", "0.0.0.0")  # Bind to all interfaces for Vercel
 PORT = int(os.getenv("PORT") or "8000")
-DEBUG = os.getenv("DEBUG", "true").lower() in ("true", "1", "yes")
+DEBUG = os.getenv("DEBUG", "false" if IS_VERCEL else "true").lower() in ("true", "1", "yes")
 
 # Directory Paths
-DATA_DIR = BASE_DIR / "data"
-MODEL_DIR = BASE_DIR / "model"
-UPLOADS_DIR = BASE_DIR / "uploads"
+# On Vercel, use /tmp for writable storage (ephemeral, clears on restart)
+if IS_VERCEL:
+    DATA_DIR = Path(tempfile.gettempdir()) / "smart-waste-ai" / "data"
+    MODEL_DIR = BASE_DIR / "model"
+    UPLOADS_DIR = Path(tempfile.gettempdir()) / "smart-waste-ai" / "uploads"
+else:
+    DATA_DIR = BASE_DIR / "data"
+    MODEL_DIR = BASE_DIR / "model"
+    UPLOADS_DIR = BASE_DIR / "uploads"
+
 TEMPLATES_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
@@ -48,7 +60,6 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = Path(os.getenv("DB_PATH", str(DATA_DIR / "waste.db")))
 
 # Machine Learning / Deep Learning Model Settings
-# Supports custom trained Keras (.keras / .h5) or PyTorch (.pth / .pt) or ONNX (.onnx) model
 DEFAULT_MODEL_PATH = MODEL_DIR / "waste_classifier.keras"
 ALT_PYTORCH_MODEL_PATH = MODEL_DIR / "waste_classifier.pth"
 MODEL_PATH = Path(os.getenv("MODEL_PATH", str(DEFAULT_MODEL_PATH)))
@@ -60,7 +71,6 @@ IMAGE_SIZE = (224, 224)
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.55"))
 
 # Duplicate Detection Debounce Window (in seconds)
-# Prevents storing identical consecutive frames into SQLite when an object stays in front of the camera
 DEBOUNCE_SECONDS = float(os.getenv("DEBOUNCE_SECONDS", "5.0"))
 
 # Default Frontend Webcam Frame Capture Interval (in milliseconds)
